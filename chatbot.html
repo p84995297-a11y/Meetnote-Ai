@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>MeetNote AI Chatbot</title>
+
+
+    <link href="css/style.css" rel="stylesheet">
+
+    </head>
+
+    <body class="chat-page">
+
+    <header class="site-header">
+        <div class="container">
+            <div class="logo">MeetNote AI</div>
+            <nav class="nav">
+                <a class="nav-btn" href="index.html">Home</a>
+                <a class="nav-btn" href="dashboard.html">Dashboard</a>
+                <a class="nav-btn" href="features.html">Features</a>
+                <a class="nav-btn" href="login.html">Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="chat-panel">
+                <h1>MeetNote AI Chatbot</h1>
+                <p class="lead">Ask anything about your transcript and get instant AI-powered answers.</p>
+                <div class="chat-actions">
+                    <input id="question" class="auth-input" type="text" placeholder="Ask question...">
+                    <button class="auth-btn" onclick="askBot()">Ask</button>
+                </div>
+                <div id="response" class="card">AI Response appears here...</div>
+            </div>
+        </div>
+    </main>
+
+<script>
+
+async function askBot(){
+
+    const question =
+        document.getElementById(
+            "question"
+        ).value;
+
+    const transcript =
+        localStorage.getItem(
+            "transcript"
+        ) || "";
+
+    const response =
+        await fetch(
+
+            "http://127.0.0.1:8000/chatbot",
+
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    question:question,
+
+                    transcript:transcript
+
+                })
+            }
+        );
+
+    const result =
+        await response.json();
+
+    document.getElementById(
+        "response"
+    ).innerText =
+        result.response;
+}
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Register - MeetNote AI</title>
+
+    <link href="css/style.css" rel="stylesheet">
+
+    </head>
+
+    <body class="auth-page">
+
+    <div class="auth-box">
+
+        <h1>Create Account</h1>
+
+        <input class="auth-input" type="text" id="name" placeholder="Full Name">
+        <input class="auth-input" type="email" id="email" placeholder="Email">
+        <input class="auth-input" type="password" id="password" placeholder="Password">
+        <input class="auth-input" type="password" id="confirmPassword" placeholder="Confirm Password">
+        <select class="auth-select" id="role">
+            <option value="">Select Role</option>
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+        </select>
+
+        <button class="auth-btn" onclick="register()">Register</button>
+
+        <p class="auth-caption">Already have an account? <a class="muted-link" href="login.html">Login</a></p>
+
+    </div>
+<script>
+function register(){
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const role = document.getElementById("role").value;
+
+    if (!name) return alert("Please enter your full name.");
+    if (!email || !email.includes("@")) return alert("Please enter a valid email.");
+    if (!password || password.length < 6) return alert("Password must be at least 6 characters.");
+    if (password !== confirmPassword) return alert("Passwords do not match.");
+    if (!role) return alert("Please select a role.");
+
+    localStorage.setItem("name", name);
+    localStorage.setItem("email", email);
+    localStorage.setItem("password", password);
+    localStorage.setItem("role", role);
+
+    alert("Registration Successful");
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+
+</html>

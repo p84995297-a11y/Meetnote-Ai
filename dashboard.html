@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeetNote AI Dashboard</title>
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body class="upload-page">
+<header class="site-header">
+    <div class="container">
+        <div class="logo">MeetNote AI</div>
+        <nav class="nav">
+            <a class="nav-btn" href="index.html">Home</a>
+            <a class="nav-btn" href="features.html">Features</a>
+            <a class="nav-btn" href="history.html">History</a>
+            <a class="nav-btn" href="admin.html">Admin</a>
+            <a class="nav-btn" href="login.html">Login</a>
+        </nav>
+    </div>
+</header>
+<main>
+    <div class="container">
+        <div class="card dashboard-panel upload-box">
+            <h2>Upload & Generate Notes</h2>
+            <p>Choose a meeting audio or video file, select the language, and generate AI-powered transcripts, summaries, and key points.</p>
+            <div class="field-group">
+                <input type="file" id="fileInput" accept="audio/*,video/*">
+                <select id="language">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="kn">Kannada</option>
+                    <option value="ta">Tamil</option>
+                    <option value="te">Telugu</option>
+                    <option value="ml">Malayalam</option>
+                    <option value="fr">French</option>
+                    <option value="es">Spanish</option>
+                    <option value="de">German</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                    <option value="zh-CN">Chinese</option>
+                </select>
+            </div>
+            <button class="auth-btn" onclick="uploadFile()">Generate Notes</button>
+            <p id="status" class="status-text"></p>
+            <div class="progress-container"><div id="progressBar"></div></div>
+        </div>
+        <div class="card dashboard-panel">
+            <h2>Transcript</h2>
+            <pre id="transcript">Transcript will appear here...</pre>
+            <div class="download-buttons">
+                <button class="auth-btn" onclick="downloadText(transcriptData,'transcript.txt')">Download Transcript</button>
+            </div>
+        </div>
+        <div class="card dashboard-panel">
+            <h2>Summary</h2>
+            <pre id="summary">Summary will appear here...</pre>
+            <div class="download-buttons">
+                <button class="auth-btn" onclick="downloadText(summaryData,'summary.txt')">Download Summary</button>
+                <button class="auth-btn" onclick="downloadPDF()">Download PDF</button>
+            </div>
+        </div>
+        <div class="card dashboard-panel">
+            <h2>Important Points</h2>
+            <div id="points"></div>
+        </div>
+    </div>
+</main>
+<script>
+let transcriptData = "";
+let summaryData = "";
+let keyPointsData = [];
+async function uploadFile(){
+    const file = document.getElementById("fileInput").files[0];
+    if(!file){ alert("Please select a file"); return; }
+    if(file.size > 50 * 1024 * 1024){ alert("Use file below 50MB"); return; }
+    const status = document.getElementById("status");
+    status.innerText = "AI is generating transcript, summary and translation...";
+    const progressBar = document.getElementById("progressBar"); progressBar.style.width = "0%"; progressBar.innerText = "0%";
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("language", document.getElementById("language").value);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "http://127.0.0.1:8000/upload", true);
+    xhr.upload.onprogress = function(event){ if(event.lengthComputable){ const percent = Math.round((event.loaded / event.total) * 100); progressBar.style.width = percent + "%"; progressBar.innerText = percent + "%"; } };
+    xhr.onload = function(){ if(xhr.status == 200){ const data = JSON.parse(xhr.responseText); transcriptData = data.transcript || ""; summaryData = data.summary || ""; keyPointsData = data.key_points || []; document.getElementById("transcript").innerText = transcriptData; document.getElementById("summary").innerText = summaryData; const pointsDiv = document.getElementById("points"); pointsDiv.innerHTML = ""; keyPointsData.forEach(point => { pointsDiv.innerHTML += `<div class="highlight">${point}</div>` }); progressBar.style.width = "100%"; progressBar.innerText = "100%"; status.innerText = "Processing Completed"; alert("Notes Generated Successfully"); } else { status.innerText = "Upload Failed"; alert("Backend Error"); } };
+    xhr.onerror = function(){ status.innerText = "Network Error"; alert("Failed To Connect Backend"); };
+    xhr.send(formData);
+}
+function downloadText(data,fileName){ const blob = new Blob([data],{type:"text/plain"}); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = fileName; link.click(); }
+function downloadPDF(){ const payload = { transcript: transcriptData, summary: summaryData, key_points: keyPointsData }; fetch('http://127.0.0.1:8000/download-pdf-from-json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(response => { if(!response.ok) throw new Error('PDF generation failed'); return response.blob(); }).then(blob => { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.download = 'MeetNote_AI_Notes.pdf'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }).catch(err => { alert('PDF download failed: ' + err.message) }); }
+</script>
+</body>
+</html>
